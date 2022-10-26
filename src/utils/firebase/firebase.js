@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
@@ -43,11 +43,11 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
   if (!userAuth) return;
 
   const userDocRef = doc(db, 'users', userAuth.uid);
-  console.log(userDocRef);
+  // console.log(userDocRef);
 
   const userSnapshot = await getDoc(userDocRef);
-  console.log(userSnapshot);
-  console.log(userSnapshot.exists());
+  // console.log(userSnapshot);
+  // console.log(userSnapshot.exists());
 
   if (!userSnapshot.exists()) {
     const { displayName, email } = userAuth;
@@ -72,10 +72,16 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
 export const createAuthUserWithEmailAndPassword = async (email, password) => {
   if (!email || !password) return;
   return await createUserWithEmailAndPassword(auth, email, password);
-}
+};
 
 // allows user to sign in with their email & password
 export const signInAuthUserWithEmailAndPassword = async (email, password) => {
   if (!email || !password) return;
   return await signInWithEmailAndPassword(auth, email, password);
-}
+};
+
+// allows user to sign out of their account
+export const signOutUser = async () => await signOut(auth);
+
+// 
+export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback);
