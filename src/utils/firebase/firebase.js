@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection, writeBatch, query } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -85,3 +85,47 @@ export const signOutUser = async () => await signOut(auth);
 
 // 
 export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback);
+
+
+/* 
+
+  creates a new collection and the documents within that new collection in the firestore
+
+    -- collectionKey: refers to the name of the collection
+    -- objectsToAdd: refers to documents that are with the collection 
+    
+*/
+
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+
+  const batch = writeBatch(db);
+  const collectionRef = collection(db, collectionKey);
+
+  objectsToAdd.forEach((object) => {
+    const docRef = doc(collectionRef, object.title.toLowerCase());
+    batch.set(docRef, object);
+  });
+
+  await batch.commit();
+  console.log('done');
+};
+
+
+// get the 'categories' collection & it's documents from the firebase store
+export const getCategoriesAndDocuments = async () => {
+
+  const collectionRef = collection(db, 'categories');
+
+  const q = query(collectionRef);
+
+  const querySnapshot = await getDocs(q);
+
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
+    acc[title.toLowerCase()] = items;
+    return acc;
+  }, {});
+
+  return categoryMap;
+
+};
